@@ -411,6 +411,7 @@
     // hack img load
     var src = this.img.getAttribute("data-src") || this.img.src;
     var loadingImg = new Image();
+    loadingImg.crossOrigin="Anonymous";
     loadingImg.onload = function () {
       this.onImgLoad();
     }.bind(this);
@@ -850,7 +851,7 @@
   window.BreathingHalftone = Halftone;
 })(window);
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 const BreathingHalftone = ({
   src,
