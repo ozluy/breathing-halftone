@@ -5,7 +5,7 @@ Using this library for the animations https://github.com/desandro/breathing-half
 Just made it a React component.
 
 ## Usage
-
+`yarn add breathing-halftone` or `npm install breathing-halftone`
 ```jsx
 <BreathingHalftone src="lion.png" />
 ```
@@ -106,6 +106,9 @@ Images must be hosted on the same domain as the site. Cross-domain images cannot
 Smaller dots = lots more dots = poorer browser performance.
 
 As [Firefox and IE do not support `darker` compositing](http://dropshado.ws/post/77229081704/firefox-doesnt-support-canvas-composite-darker), so these browsers will fallback to simple black and white design, using `channels: [ 'lum' ]`.
+
+
+ <a href="https://paypal.me/ozluy"> <img src="https://raw.githubusercontent.com/ozluy/react-stripe-script-loader/master/buy-me-a-coffee-with-paypal.png" /></a>
 
 ## MIT License
 

@@ -1,17 +1,19 @@
-/*!
- * Breathing Halftone
- * Images go whoa with lots of floaty dots
- * http://breathing-halftone.desandro.com
- */
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var _react = require("react");
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 (function (window) {
   // eslint-disable-next-line
-  "use strict";
+  "use strict"; // ----- vars ----- //
 
-  // ----- vars ----- //
-
-  var Halftone = (window.BreathingHalftone = window.BreathingHalftone || {});
-
-  // -------------------------- Vector -------------------------- //
+  var Halftone = window.BreathingHalftone = window.BreathingHalftone || {}; // -------------------------- Vector -------------------------- //
 
   function Vector(x, y) {
     this.set(x || 0, y || 0);
@@ -40,16 +42,14 @@
   Vector.prototype.multiply = function (v) {
     this.x *= v.x;
     this.y *= v.y;
-  };
+  }; // custom getter whaaaaaaat
 
-  // custom getter whaaaaaaat
+
   Object.defineProperty(Vector.prototype, "magnitude", {
-    get: function () {
+    get: function get() {
       return Math.sqrt(this.x * this.x + this.y * this.y);
-    },
-  });
-
-  // ----- class functions ----- //
+    }
+  }); // ----- class functions ----- //
 
   Vector.subtract = function (a, b) {
     return new Vector(a.x - b.x, a.y - b.y);
@@ -68,41 +68,32 @@
 
 (function (window) {
   // eslint-disable-next-line
-  "use strict";
-
-  // ----- vars ----- //
+  "use strict"; // ----- vars ----- //
 
   var TAU = Math.PI * 2;
 
   function getNow() {
     return new Date();
-  }
+  } // --------------------------  -------------------------- //
 
-  // --------------------------  -------------------------- //
 
   var Halftone = window.BreathingHalftone || {};
-  var Vector = Halftone.Vector;
-
-  // -------------------------- Particle -------------------------- //
+  var Vector = Halftone.Vector; // -------------------------- Particle -------------------------- //
 
   function Particle(properties) {
     this.channel = properties.channel;
     this.origin = properties.origin;
     this.parent = properties.parent;
     this.friction = properties.friction;
-
     this.position = Vector.copy(this.origin);
     this.velocity = new Vector();
     this.acceleration = new Vector();
-
     this.naturalSize = properties.naturalSize;
     this.size = 0;
     this.sizeVelocity = 0;
     this.oscSize = 0;
     this.initSize = 0;
-    this.initSizeVelocity =
-      (Math.random() * 0.5 + 0.5) * this.parent.options.initVelocity;
-
+    this.initSizeVelocity = (Math.random() * 0.5 + 0.5) * this.parent.options.initVelocity;
     this.oscillationOffset = Math.random() * TAU;
     this.oscillationMagnitude = Math.random();
     this.isVisible = false;
@@ -117,25 +108,23 @@
     if (!this.isVisible && Math.random() > 0.03) {
       return;
     }
+
     this.isVisible = true;
+    this.applyOriginAttraction(); // velocity
 
-    this.applyOriginAttraction();
-
-    // velocity
     this.velocity.add(this.acceleration);
-    this.velocity.scale(1 - this.friction);
-    // position
-    this.position.add(this.velocity);
-    // reset acceleration
-    this.acceleration.set(0, 0);
+    this.velocity.scale(1 - this.friction); // position
 
+    this.position.add(this.velocity); // reset acceleration
+
+    this.acceleration.set(0, 0);
     this.calculateSize();
   };
 
   Particle.prototype.render = function (ctx) {
-    var size = this.size * this.oscSize;
-    // apply initSize with easing
-    var initSize = Math.cos((this.initSize * TAU) / 2) * -0.5 + 0.5;
+    var size = this.size * this.oscSize; // apply initSize with easing
+
+    var initSize = Math.cos(this.initSize * TAU / 2) * -0.5 + 0.5;
     size *= initSize;
     size = Math.max(0, size);
     ctx.beginPath();
@@ -150,44 +139,34 @@
       this.initSize = Math.min(1, this.initSize);
     }
 
-    var targetSize = this.naturalSize * this.getChannelValue();
+    var targetSize = this.naturalSize * this.getChannelValue(); // use accel/velocity to smooth changes in size
 
-    // use accel/velocity to smooth changes in size
     var sizeAcceleration = (targetSize - this.size) * 0.1;
-    this.sizeVelocity += sizeAcceleration;
-    // friction
-    this.sizeVelocity *= 1 - 0.3;
-    this.size += this.sizeVelocity;
+    this.sizeVelocity += sizeAcceleration; // friction
 
-    // oscillation size
+    this.sizeVelocity *= 1 - 0.3;
+    this.size += this.sizeVelocity; // oscillation size
+
     var now = getNow();
     var opts = this.parent.options;
-    var oscSize = (now / (1000 * opts.oscPeriod)) * TAU;
+    var oscSize = now / (1000 * opts.oscPeriod) * TAU;
     oscSize = Math.cos(oscSize + this.oscillationOffset);
     oscSize = oscSize * opts.oscAmplitude + 1;
     this.oscSize = oscSize;
   };
 
   Particle.prototype.getChannelValue = function () {
-    var channelValue;
-    // return origin channel value if not lens
-    var position = this.parent.options.isChannelLens
-      ? this.position
-      : this.origin;
+    var channelValue; // return origin channel value if not lens
+
+    var position = this.parent.options.isChannelLens ? this.position : this.origin;
+
     if (this.parent.options.isChannelLens) {
-      channelValue = this.parent.getPixelChannelValue(
-        position.x,
-        position.y,
-        this.channel
-      );
+      channelValue = this.parent.getPixelChannelValue(position.x, position.y, this.channel);
     } else {
       if (!this.originChannelValue) {
-        this.originChannelValue = this.parent.getPixelChannelValue(
-          position.x,
-          position.y,
-          this.channel
-        );
+        this.originChannelValue = this.parent.getPixelChannelValue(position.x, position.y, this.channel);
       }
+
       channelValue = this.originChannelValue;
     }
 
@@ -205,47 +184,44 @@
 
 (function (window) {
   // eslint-disable-next-line
-  "use strict";
-
-  // ----- vars ----- //
+  "use strict"; // ----- vars ----- //
 
   var TAU = Math.PI * 2;
-  var ROOT_2 = Math.sqrt(2);
-
-  // ----- helpers ----- //
+  var ROOT_2 = Math.sqrt(2); // ----- helpers ----- //
 
   var objToString = Object.prototype.toString;
-  var isArray =
-    Array.isArray ||
-    function (obj) {
-      return objToString.call(obj) === "[object Array]";
-    };
 
-  // extend objects
+  var isArray = Array.isArray || function (obj) {
+    return objToString.call(obj) === "[object Array]";
+  }; // extend objects
+
+
   function extend(a, b, isDeep) {
     for (var prop in b) {
       var value = b[prop];
-      if (isDeep && typeof value === "object" && !isArray(value)) {
+
+      if (isDeep && _typeof(value) === "object" && !isArray(value)) {
         // deep extend
         a[prop] = extend(a[prop] || {}, value, true);
       } else {
         a[prop] = value;
       }
     }
+
     return a;
   }
 
   function insertAfter(elem, afterElem) {
     var parent = afterElem.parentNode;
     var nextElem = afterElem.nextElementSibling;
+
     if (nextElem) {
       parent.insertBefore(elem, nextElem);
     } else {
       parent.appendChild(elem);
     }
-  }
+  } // -------------------------- supports -------------------------- //
 
-  // -------------------------- supports -------------------------- //
 
   var supports = {};
 
@@ -254,11 +230,12 @@
     var canvas = document.createElement("canvas");
     var ctx = canvas.getContext && canvas.getContext("2d");
     supports.canvas = !!ctx;
+
     if (!supports.canvas) {
       return;
-    }
+    } // check darker composite support
 
-    // check darker composite support
+
     canvas.width = 1;
     canvas.height = 1;
     ctx.globalCompositeOperation = "darker";
@@ -268,35 +245,31 @@
     ctx.fillRect(0, 0, 1, 1);
     var imgData = ctx.getImageData(0, 0, 1, 1).data;
     supports.darker = imgData[0] === 153 && imgData[1] === 0;
-  })();
-
-  // -------------------------- requestAnimationFrame -------------------------- //
-
+  })(); // -------------------------- requestAnimationFrame -------------------------- //
   // https://gist.github.com/1866474
 
+
   var lastTime = 0;
-  var prefixes = "webkit moz ms o".split(" ");
-  // get unprefixed rAF and cAF, if present
+  var prefixes = "webkit moz ms o".split(" "); // get unprefixed rAF and cAF, if present
+
   var requestAnimationFrame = window.requestAnimationFrame;
-  var cancelAnimationFrame = window.cancelAnimationFrame;
-  // loop through vendor prefixes and get prefixed rAF and cAF
+  var cancelAnimationFrame = window.cancelAnimationFrame; // loop through vendor prefixes and get prefixed rAF and cAF
+
   var prefix;
+
   for (var i = 0; i < prefixes.length; i++) {
     if (requestAnimationFrame && cancelAnimationFrame) {
       break;
     }
-    prefix = prefixes[i];
-    requestAnimationFrame =
-      requestAnimationFrame || window[prefix + "RequestAnimationFrame"];
-    cancelAnimationFrame =
-      cancelAnimationFrame ||
-      window[prefix + "CancelAnimationFrame"] ||
-      window[prefix + "CancelRequestAnimationFrame"];
-  }
 
-  // fallback to setTimeout and clearTimeout if either request/cancel is not supported
+    prefix = prefixes[i];
+    requestAnimationFrame = requestAnimationFrame || window[prefix + "RequestAnimationFrame"];
+    cancelAnimationFrame = cancelAnimationFrame || window[prefix + "CancelAnimationFrame"] || window[prefix + "CancelRequestAnimationFrame"];
+  } // fallback to setTimeout and clearTimeout if either request/cancel is not supported
+
+
   if (!requestAnimationFrame || !cancelAnimationFrame) {
-    requestAnimationFrame = function (callback) {
+    requestAnimationFrame = function requestAnimationFrame(callback) {
       var currTime = new Date().getTime();
       var timeToCall = Math.max(0, 16 - (currTime - lastTime));
       var id = setTimeout(function () {
@@ -306,26 +279,23 @@
       return id;
     };
 
-    cancelAnimationFrame = function (id) {
+    cancelAnimationFrame = function cancelAnimationFrame(id) {
       clearTimeout(id);
     };
-  }
+  } // --------------------------  -------------------------- //
 
-  // --------------------------  -------------------------- //
 
   var _Halftone = window.BreathingHalftone || {};
-  var Vector = _Halftone.Vector;
-  var Particle = _Halftone.Particle;
 
-  // -------------------------- BreathingHalftone -------------------------- //
+  var Vector = _Halftone.Vector;
+  var Particle = _Halftone.Particle; // -------------------------- BreathingHalftone -------------------------- //
 
   function Halftone(img, options) {
     // set options
     this.options = extend({}, this.constructor.defaults, true);
     extend(this.options, options, true);
+    this.img = img; // bail if canvas is not supported
 
-    this.img = img;
-    // bail if canvas is not supported
     if (!supports.canvas) {
       return;
     }
@@ -350,7 +320,7 @@
     hoverDiameter: 0.3,
     hoverForce: -0.02,
     activeDiameter: 0.6,
-    activeForce: 0.01,
+    activeForce: 0.01
   };
 
   function makeCanvasAndCtx() {
@@ -358,46 +328,42 @@
     var ctx = canvas.getContext("2d");
     return {
       canvas: canvas,
-      ctx: ctx,
+      ctx: ctx
     };
   }
 
   Halftone.prototype.create = function () {
-    this.isActive = true;
+    this.isActive = true; // create main canvas
 
-    // create main canvas
     var canvasAndCtx = makeCanvasAndCtx();
     this.canvas = canvasAndCtx.canvas;
-    this.ctx = canvasAndCtx.ctx;
-    // copy over class
+    this.ctx = canvasAndCtx.ctx; // copy over class
+
     this.canvas.className = this.img.className;
-    insertAfter(this.canvas, this.img);
-    // hide img visually
-    this.img.style.visibility = "hidden";
+    insertAfter(this.canvas, this.img); // hide img visually
 
-    // fall back to lum channel if subtractive and darker isn't supported
-    this.channels =
-      !this.options.isAdditive && !supports.darker
-        ? ["lum"]
-        : this.options.channels;
+    this.img.style.visibility = "hidden"; // fall back to lum channel if subtractive and darker isn't supported
 
-    // create separate canvases for each color
+    this.channels = !this.options.isAdditive && !supports.darker ? ["lum"] : this.options.channels; // create separate canvases for each color
+
     this.proxyCanvases = {};
+
     for (var i = 0, len = this.channels.length; i < len; i++) {
       var channel = this.channels[i];
       this.proxyCanvases[channel] = makeCanvasAndCtx();
     }
 
-    this.loadImage();
+    this.loadImage(); // properties
 
-    // properties
     this.canvasPosition = new Vector();
-    this.getCanvasPosition();
-    // hash of mouse / touch events
-    this.cursors = {};
-    // position -100,000, -100,000 so its not on screen
-    this.addCursor("mouse", { pageX: -1e5, pageY: -1e5 });
+    this.getCanvasPosition(); // hash of mouse / touch events
 
+    this.cursors = {}; // position -100,000, -100,000 so its not on screen
+
+    this.addCursor("mouse", {
+      pageX: -1e5,
+      pageY: -1e5
+    });
     this.bindEvents();
   };
 
@@ -407,19 +373,20 @@
     var y = rect.top + window.pageYOffset;
     this.canvasPosition.set(x, y);
     this.canvasScale = this.width ? this.width / this.canvas.offsetWidth : 1;
-  };
+  }; // -------------------------- img -------------------------- //
 
-  // -------------------------- img -------------------------- //
 
   Halftone.prototype.loadImage = function () {
     // hack img load
     var src = this.img.getAttribute("data-src") || this.img.src;
     var loadingImg = new Image();
+
     loadingImg.onload = function () {
       this.onImgLoad();
     }.bind(this);
-    loadingImg.src = src;
-    // set src on image, so we can get correct sizes
+
+    loadingImg.src = src; // set src on image, so we can get correct sizes
+
     if (this.img.src !== src) {
       this.img.src = src;
     }
@@ -428,8 +395,8 @@
   Halftone.prototype.onImgLoad = function () {
     this.getImgData();
     this.resizeCanvas();
-    this.getCanvasPosition();
-    // hide image completely
+    this.getCanvasPosition(); // hide image completely
+
     this.img.style.display = "none";
     this.getCanvasPosition();
     this.initParticles();
@@ -449,42 +416,43 @@
 
   Halftone.prototype.resizeCanvas = function () {
     // width & height
-    var w = (this.width = this.img.offsetWidth);
-    var h = (this.height = this.img.offsetHeight);
-    // size properties
+    var w = this.width = this.img.offsetWidth;
+    var h = this.height = this.img.offsetHeight; // size properties
+
     this.diagonal = Math.sqrt(w * w + h * h);
     this.imgScale = this.width / this.imgWidth;
-    this.gridSize = this.options.dotSize * this.diagonal;
+    this.gridSize = this.options.dotSize * this.diagonal; // set proxy canvases size
 
-    // set proxy canvases size
     for (var prop in this.proxyCanvases) {
       var proxy = this.proxyCanvases[prop];
       proxy.canvas.width = w;
       proxy.canvas.height = h;
     }
+
     this.canvas.width = w;
     this.canvas.height = h;
   };
 
   Halftone.prototype.initParticles = function () {
-    var getParticlesMethod = this.options.isRadial
-      ? "getRadialGridParticles"
-      : "getCartesianGridParticles";
+    var getParticlesMethod = this.options.isRadial ? "getRadialGridParticles" : "getCartesianGridParticles"; // all particles
 
-    // all particles
-    this.particles = [];
-    // separate array of particles for each color
+    this.particles = []; // separate array of particles for each color
+
     this.channelParticles = {};
-
-    var angles = { red: 1, green: 2.5, blue: 5, lum: 4 };
+    var angles = {
+      red: 1,
+      green: 2.5,
+      blue: 5,
+      lum: 4
+    };
 
     for (var i = 0, len = this.channels.length; i < len; i++) {
       var channel = this.channels[i];
       var angle = angles[channel];
-      var particles = this[getParticlesMethod](channel, angle);
-      // associate with channel
-      this.channelParticles[channel] = particles;
-      // add to all collection
+      var particles = this[getParticlesMethod](channel, angle); // associate with channel
+
+      this.channelParticles[channel] = particles; // add to all collection
+
       this.particles = this.particles.concat(particles);
     }
   };
@@ -494,6 +462,7 @@
     if (!this.isActive) {
       return;
     }
+
     this.update();
     this.render();
     requestAnimationFrame(this.animate.bind(this));
@@ -501,19 +470,18 @@
 
   Halftone.prototype.update = function () {
     // displace particles with cursors (mouse, touches)
-
     for (var i = 0, len = this.particles.length; i < len; i++) {
-      var particle = this.particles[i];
-      // apply forces for each cursor
+      var particle = this.particles[i]; // apply forces for each cursor
+
       for (var identifier in this.cursors) {
         var cursor = this.cursors[identifier];
         var cursorState = cursor.isDown ? "active" : "hover";
         var forceScale = this.options[cursorState + "Force"];
         var diameter = this.options[cursorState + "Diameter"];
-        var radius = (diameter / 2) * this.diagonal;
+        var radius = diameter / 2 * this.diagonal;
         var force = Vector.subtract(particle.position, cursor.position);
-        var distanceScale = Math.max(0, radius - force.magnitude) / radius;
-        // easeInOutSine
+        var distanceScale = Math.max(0, radius - force.magnitude) / radius; // easeInOutSine
+
         distanceScale = Math.cos(distanceScale * Math.PI) * -0.5 + 0.5;
         force.scale(distanceScale * forceScale);
         particle.applyForce(force);
@@ -527,14 +495,10 @@
     // clear
     this.ctx.globalCompositeOperation = "source-over";
     this.ctx.fillStyle = this.options.isAdditive ? "black" : "white";
-    this.ctx.fillRect(0, 0, this.width, this.height);
+    this.ctx.fillRect(0, 0, this.width, this.height); // composite grids
 
-    // composite grids
-    this.ctx.globalCompositeOperation = this.options.isAdditive
-      ? "lighter"
-      : "darker";
+    this.ctx.globalCompositeOperation = this.options.isAdditive ? "lighter" : "darker"; // render channels
 
-    // render channels
     for (var i = 0, len = this.channels.length; i < len; i++) {
       var channel = this.channels[i];
       this.renderGrid(channel);
@@ -542,8 +506,8 @@
   };
 
   Halftone.prototype.renderGrid = function (channel) {
-    var proxy = this.proxyCanvases[channel];
-    // clear
+    var proxy = this.proxyCanvases[channel]; // clear
+
     proxy.ctx.fillStyle = this.options.isAdditive ? "black" : "white";
     proxy.ctx.fillRect(0, 0, this.width, this.height);
     var channelFillStyles = this.options.channelFillStyles || {
@@ -551,38 +515,35 @@
         red: "#FF0000",
         green: "#00FF00",
         blue: "#0000FF",
-        lum: "#FFF",
+        lum: "#FFF"
       },
       subtractive: {
         red: "#00FFFF",
         green: "#FF00FF",
         blue: "#FFFF00",
-        lum: "#000",
-      },
-    };
-    // set fill color
-    var blend = this.options.isAdditive ? "additive" : "subtractive";
-    proxy.ctx.fillStyle = channelFillStyles[blend][channel];
+        lum: "#000"
+      }
+    }; // set fill color
 
-    // render particles
+    var blend = this.options.isAdditive ? "additive" : "subtractive";
+    proxy.ctx.fillStyle = channelFillStyles[blend][channel]; // render particles
+
     var particles = this.channelParticles[channel];
+
     for (var i = 0, len = particles.length; i < len; i++) {
       var particle = particles[i];
       particle.render(proxy.ctx);
-    }
+    } // draw proxy canvas to actual canvas as whole layer
 
-    // draw proxy canvas to actual canvas as whole layer
+
     this.ctx.drawImage(proxy.canvas, 0, 0);
   };
 
   Halftone.prototype.getCartesianGridParticles = function (channel, angle) {
     var particles = [];
-
     var w = this.width;
     var h = this.height;
-
     var diag = Math.max(w, h) * ROOT_2;
-
     var gridSize = this.gridSize;
     var cols = Math.ceil(diag / gridSize);
     var rows = Math.ceil(diag / gridSize);
@@ -590,21 +551,21 @@
     for (var row = 0; row < rows; row++) {
       for (var col = 0; col < cols; col++) {
         var x1 = (col + 0.5) * gridSize;
-        var y1 = (row + 0.5) * gridSize;
-        // offset for diagonal
+        var y1 = (row + 0.5) * gridSize; // offset for diagonal
+
         x1 -= (diag - w) / 2;
-        y1 -= (diag - h) / 2;
-        // shift to center
+        y1 -= (diag - h) / 2; // shift to center
+
         x1 -= w / 2;
-        y1 -= h / 2;
-        // rotate grid
+        y1 -= h / 2; // rotate grid
+
         var x2 = x1 * Math.cos(angle) - y1 * Math.sin(angle);
-        var y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle);
-        // shift back
+        var y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle); // shift back
+
         x2 += w / 2;
         y2 += h / 2;
-
         var particle = this.initParticle(channel, x2, y2);
+
         if (particle) {
           particles.push(particle);
         }
@@ -616,28 +577,26 @@
 
   Halftone.prototype.getRadialGridParticles = function (channel, angle) {
     var particles = [];
-
     var w = this.width;
     var h = this.height;
     var diag = Math.max(w, h) * ROOT_2;
-
     var gridSize = this.gridSize;
-
     var halfW = w / 2;
     var halfH = h / 2;
     var offset = gridSize;
     var centerX = halfW + Math.cos(angle) * offset;
     var centerY = halfH + Math.sin(angle) * offset;
-
     var maxLevel = Math.ceil((diag + offset) / gridSize);
 
     for (var level = 0; level < maxLevel; level++) {
       var max = level * 6 || 1;
+
       for (var j = 0; j < max; j++) {
-        var theta = (TAU * j) / max + angle;
+        var theta = TAU * j / max + angle;
         var x = centerX + Math.cos(theta) * level * gridSize;
         var y = centerY + Math.sin(theta) * level * gridSize;
         var particle = this.initParticle(channel, x, y);
+
         if (particle) {
           particles.push(particle);
         }
@@ -651,6 +610,7 @@
     // don't render if coords are outside image
     // don't display if under threshold
     var pixelChannelValue = this.getPixelChannelValue(x, y, channel);
+
     if (pixelChannelValue < this.options.dotSizeThreshold) {
       return;
     }
@@ -659,31 +619,30 @@
       channel: channel,
       parent: this,
       origin: new Vector(x, y),
-      naturalSize: (this.gridSize * ROOT_2) / 2,
-      friction: this.options.friction,
+      naturalSize: this.gridSize * ROOT_2 / 2,
+      friction: this.options.friction
     });
   };
 
   var channelOffset = {
     red: 0,
     green: 1,
-    blue: 2,
+    blue: 2
   };
 
   Halftone.prototype.getPixelChannelValue = function (x, y, channel) {
     x = Math.round(x / this.imgScale);
     y = Math.round(y / this.imgScale);
     var w = this.imgWidth;
-    var h = this.imgHeight;
+    var h = this.imgHeight; // return 0 if position is outside of image
 
-    // return 0 if position is outside of image
     if (x < 0 || x > w || y < 0 || y > h) {
       return 0;
     }
 
     var pixelIndex = (x + y * w) * 4;
-    var value;
-    // return 1;
+    var value; // return 1;
+
     if (channel === "lum") {
       value = this.getPixelLum(pixelIndex);
     } else {
@@ -693,6 +652,7 @@
     }
 
     value = value || 0;
+
     if (!this.options.isAdditive) {
       value = 1 - value;
     }
@@ -709,9 +669,8 @@
     var max = Math.max(r, g, b);
     var min = Math.min(r, g, b);
     return (max + min) / 2;
-  };
+  }; // ----- bindEvents ----- //
 
-  // ----- bindEvents ----- //
 
   Halftone.prototype.bindEvents = function () {
     this.canvas.addEventListener("mousedown", this, false);
@@ -733,6 +692,7 @@
 
   Halftone.prototype.handleEvent = function (event) {
     var method = "on" + event.type;
+
     if (this[method]) {
       this[method](event);
     }
@@ -746,29 +706,32 @@
 
   Halftone.prototype.ontouchstart = function (event) {
     event.preventDefault();
+
     for (var i = 0, len = event.changedTouches.length; i < len; i++) {
       var touch = event.changedTouches[i];
       var cursor = this.addCursor(touch.identifier, touch);
       cursor.isDown = true;
     }
   };
-
   /**
    * @param {MouseEvent or Touch} cursorEvent - with pageX and pageY
    */
+
+
   Halftone.prototype.addCursor = function (identifier, cursorEvent) {
     var position = this.setCursorPosition(cursorEvent);
-    var cursor = (this.cursors[identifier] = {
+    var cursor = this.cursors[identifier] = {
       position: position,
-      isDown: false,
-    });
+      isDown: false
+    };
     return cursor;
   };
-
   /**
    * @param {MouseEvent or Touch} cursorEvent - with pageX and pageY
    * @param {Vector} position - optional
    */
+
+
   Halftone.prototype.setCursorPosition = function (cursorEvent, position) {
     position = position || new Vector();
     position.set(cursorEvent.pageX, cursorEvent.pageY);
@@ -786,6 +749,7 @@
     for (var i = 0, len = event.changedTouches.length; i < len; i++) {
       var touch = event.changedTouches[i];
       var cursor = this.cursors[touch.identifier];
+
       if (cursor) {
         this.setCursorPosition(touch, cursor.position);
       }
@@ -802,6 +766,7 @@
     for (var i = 0, len = event.changedTouches.length; i < len; i++) {
       var touch = event.changedTouches[i];
       var cursor = this.cursors[touch.identifier];
+
       if (cursor) {
         delete this.cursors[touch.identifier];
       }
@@ -815,18 +780,16 @@
 
     _class.prototype[methodName] = function () {
       var timeout = this[timeoutName];
+
       if (timeout) {
         clearTimeout(timeout);
       }
-      var args = arguments;
 
-      this[timeoutName] = setTimeout(
-        function () {
-          method.apply(this, args);
-          delete this[timeoutName];
-        }.bind(this),
-        threshold || 100
-      );
+      var args = arguments;
+      this[timeoutName] = setTimeout(function () {
+        method.apply(this, args);
+        delete this[timeoutName];
+      }.bind(this), threshold || 100);
     };
   }
 
@@ -834,22 +797,59 @@
     this.getCanvasPosition();
   };
 
-  debounceProto(Halftone, "onresize", 200);
-
-  // ----- destroy ----- //
+  debounceProto(Halftone, "onresize", 200); // ----- destroy ----- //
 
   Halftone.prototype.destroy = function () {
     this.isActive = false;
     this.unbindEvents();
-
     this.img.style.visibility = "";
     this.img.style.display = "";
     this.canvas.parentNode.removeChild(this.canvas);
-  };
+  }; // --------------------------  -------------------------- //
 
-  // --------------------------  -------------------------- //
 
   Halftone.Vector = Vector;
   Halftone.Particle = Particle;
   window.BreathingHalftone = Halftone;
 })(window);
+
+var BreathingHalftone = function BreathingHalftone(_ref) {
+  var src = _ref.src,
+      _ref$alt = _ref.alt,
+      alt = _ref$alt === void 0 ? "Breathing Halftone" : _ref$alt,
+      _ref$options = _ref.options,
+      options = _ref$options === void 0 ? {
+    dotSize: 1 / 100,
+    channelFillStyles: {
+      additive: {
+        red: "#FF0000",
+        green: "#00FF00",
+        blue: "#0000FF",
+        lum: "#FFF"
+      },
+      subtractive: {
+        red: "#00FFFF",
+        green: "#FF00FF",
+        blue: "#FFFF00",
+        lum: "#999"
+      }
+    }
+  } : _ref$options;
+  var imgRef = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    if (imgRef.current) {
+      var _BreathingHalftone = window.BreathingHalftone;
+      new _BreathingHalftone(imgRef.current, options);
+    }
+  }, [options, imgRef]);
+  return React.createElement("img", {
+    ref: imgRef,
+    id: "targetImg",
+    alt: alt,
+    src: src,
+    "data-src": src
+  });
+};
+
+var _default = BreathingHalftone;
+exports["default"] = _default;
