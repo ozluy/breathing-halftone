@@ -1,70 +1,113 @@
-# Getting Started with Create React App
+## Inspired by breathing-halftone
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Using this library for the animations https://github.com/desandro/breathing-halftone
 
-## Available Scripts
+Just made it a React component.
 
-In the project directory, you can run:
+## Usage
 
-### `npm start`
+```jsx
+<BreathingHalftone src="lion.png" />
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+possible props
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- src (img source)
+- alt (default="Breathing Halftone")
+- options (default= {}),
 
-### `npm test`
+## Options
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+There are a bunch of options so you can fine-tune to your heart's content.
 
-### `npm run build`
+```js
+// default options
+{
+  // ----- dot size ----- //
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  dotSize: 1/40,
+  // size of dots
+  // as a fraction of the diagonal of the image
+  // smaller dots = more dots = poorer performance
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  dotSizeThreshold: 0.05,
+  // hides dots that are smaller than a percentage
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  initVelocity: 0.02,
+  // speed at which dots initially grow
 
-### `npm run eject`
+  oscPeriod: 3,
+  // duration in seconds of a cycle of dot size oscilliation or 'breathing'
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+  oscAmplitude: 0.2
+  // percentage of change of oscillation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  // ----- color & layout ----- //
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+  isAdditive: false,
+  // additive is black with RGB dots,
+  // subtractive is white with CMK dots
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+  isRadial: false,
+  // enables radial grid layout
 
-## Learn More
+  channels: [ 'red', 'green', 'blue' ],
+  // layers of dots
+  // 'lum' is another supported channel, for luminosity
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  channelFillStyles:  {
+      additive: {
+        red: "#FF0000",
+        green: "#00FF00",
+        blue: "#0000FF",
+        lum: "#FFF",
+      },
+      subtractive: {
+        red: "#00FFFF",
+        green: "#FF00FF",
+        blue: "#FFFF00",
+        lum: "#000",
+      },
+    },
+  //Fill colors
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  isChannelLens: true,
+  // disables changing size of dots when displaced
 
-### Code Splitting
+  // ----- behavior ----- //
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+  friction: 0.06,
+  // lower makes dots easier to move, higher makes it harder
 
-### Analyzing the Bundle Size
+  hoverDiameter: 0.3,
+  // size of hover effect
+  // as a fraction of the diagonal of the image
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+  hoverForce: -0.02,
+  // amount of force of hover effect
+  // negative values pull dots in, positive push out
 
-### Making a Progressive Web App
+  activeDiameter: 0.6,
+  // size of click/tap effect
+  // as a fraction of the diagonal of the image
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+  activeForce: 0.01
+  // amount of force of hover effect
+  // negative values pull dots in, positive push out
+}
+```
 
-### Advanced Configuration
+## Gotchas
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+As the halftone is low resolution, you don't need a high resolution source image.
 
-### Deployment
+Images must be hosted on the same domain as the site. Cross-domain images cannot be used for [security according to the `<canvas>` spec](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#security-with-canvas-elements).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Smaller dots = lots more dots = poorer browser performance.
 
-### `npm run build` fails to minify
+As [Firefox and IE do not support `darker` compositing](http://dropshado.ws/post/77229081704/firefox-doesnt-support-canvas-composite-darker), so these browsers will fallback to simple black and white design, using `channels: [ 'lum' ]`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## MIT License
+
+All credits to https://github.com/desandro/breathing-halftone
+Breathing Halftone is released under the [MIT License](http://desandro.mit-license.org/). Have at it.
