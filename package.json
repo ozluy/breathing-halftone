@@ -1,5 +1,5 @@
 {
-  "name": "@ozluy/breathing-halftone",
+  "name": "breathing-halftone",
   "version": "0.1.0",
   "description": "React component that makes awesome hover animations for pics",
   "main": "index.js",
