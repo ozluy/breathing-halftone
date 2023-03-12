@@ -39,7 +39,7 @@ There are a bunch of options so you can fine-tune to your heart's content.
   oscPeriod: 3,
   // duration in seconds of a cycle of dot size oscilliation or 'breathing'
 
-  oscAmplitude: 0.2
+  oscAmplitude: 0.2,
   // percentage of change of oscillation
 
   // ----- color & layout ----- //
