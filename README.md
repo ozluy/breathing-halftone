@@ -4,6 +4,13 @@ Using this library for the animations https://github.com/desandro/breathing-half
 
 Just made it a React component.
 
+## Demo
+
+demo => https://nnriyc.csb.app/
+
+CodeSandbox => https://codesandbox.io/s/breathing-halftone-forked-nnriyc
+
+
 ## Usage
 `yarn add breathing-halftone` or `npm install breathing-halftone`
 ```jsx
