@@ -1,6 +1,6 @@
 {
   "name": "breathing-halftone",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "React component that makes awesome hover animations for pics",
   "main": "index.js",
   "scripts": {
